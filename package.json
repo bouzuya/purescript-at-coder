@@ -26,11 +26,10 @@
     "type": "git"
   },
   "scripts": {
-    "build": "spago build",
-    "bundle": "spago bundle",
+    "build": "spago bundle",
     "docs": "spago docs",
     "minify": "uglifyjs index.js --output index.min.js",
-    "prepare": "npm-run-all -s build bundle minify",
+    "prepare": "npm-run-all -s build minify",
     "purs": "purs",
     "repl": "spago repl",
     "spago": "spago",
