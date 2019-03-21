@@ -1,0 +1,10 @@
+/*.tgz
+/.cache/
+/.env*
+/.psc*
+/.spago/
+/generated-docs/
+/index.js
+/index.min.js
+/node_modules/
+/output/
