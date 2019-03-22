@@ -6,7 +6,6 @@ module AtCoder.ABC085.C
 import Prelude
 
 import Control.Monad.Rec.Class as MonadRec
-import Control.MonadZero as MonadZero
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either as Either
