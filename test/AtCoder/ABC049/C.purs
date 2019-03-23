@@ -5,6 +5,7 @@ module Test.AtCoder.ABC049.C
 import Prelude
 
 import AtCoder.ABC049.C as ABC049C
+import Data.Array as Array
 import Test.Unit (TestSuite)
 import Test.Unit as TestUnit
 import Test.Unit.Assert as Assert
@@ -19,3 +20,8 @@ tests = TestUnit.suite "ABC049.C" do
 
   TestUnit.test "example 3" do
     Assert.equal "NO" (ABC049C.solve "dreamerer\n")
+
+  TestUnit.test "test 1" do
+    Assert.equal
+      "YES"
+      (ABC049C.solve ((Array.fold (Array.replicate 20000 "erase")) <> "\n"))

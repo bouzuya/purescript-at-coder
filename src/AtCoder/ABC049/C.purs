@@ -6,31 +6,39 @@ import Prelude
 
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
-import Data.Maybe as Maybe
+import Data.Set (Set)
+import Data.Set as Set
 import Data.String as String
 
-tfs :: Array (String -> Maybe String)
-tfs =
-  map
-    (String.stripPrefix <<< String.Pattern)
-    [ "dream"
-    , "dreamer"
-    , "erase"
-    , "eraser"
-    ]
+ts :: Array String
+ts =
+  [ "dream"
+  , "dreamer"
+  , "erase"
+  , "eraser"
+  ]
 
 solve :: String -> String
-solve input = solve' (String.trim input)
+solve input
+  | solve' (Set.fromFoldable [String.trim input]) = "YES"
+  | otherwise = "NO"
 
-solve' :: String -> String
-solve' s =
-  case Array.catMaybes (map (\f -> f s) tfs) of
-    [] -> "NO"
-    ss' ->
-      case Array.find String.null ss' of
-        Just _ -> "YES"
-        Nothing ->
-          Maybe.maybe
-            "NO"
-            (const "YES")
-            (Array.find (\s' -> solve' s' == "YES") ss')
+solve' :: Set String -> Boolean
+solve' ss =
+  let
+    keys = Set.toUnfoldable ss
+  in
+    case Array.head keys of
+      Nothing -> false
+      Just s ->
+        let
+          nexts = solve'' s
+        in
+          case Array.find String.null nexts of
+            Just _ -> true
+            Nothing ->
+              solve' (Set.fromFoldable ((Array.drop 1 keys) <> nexts))
+
+solve'' :: String -> Array String
+solve'' s =
+  Array.catMaybes (map (\t -> String.stripPrefix (String.Pattern t) s) ts)
