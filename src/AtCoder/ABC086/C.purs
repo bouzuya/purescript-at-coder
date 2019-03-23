@@ -42,19 +42,19 @@ solve'' plans
   | otherwise = "No"
 
 solve''' :: Array { t :: Int, x :: Int, y :: Int } -> Boolean
-solve''' = (MonadRec.tailRec go) <<< ({ curr: { t: 0, x: 0, y: 0 }, plans: _ })
+solve''' plans = MonadRec.tailRec go { curr: { t: 0, x: 0, y: 0 }, index: 0 }
   where
-    go { curr: { t, x, y }, plans } =
-      case Array.head plans of
-        Nothing -> MonadRec.Done true
-        Just { t: t', x: x', y: y' } ->
-          let
-            dt = t' - t
-            dx = Ord.abs (x' - x)
-            dy = Ord.abs (y' - y)
-          in
-            if (dx + dy > dt) || (Int.odd (dt - (dx + dy)))
-              then MonadRec.Done false
-              else
-                MonadRec.Loop
-                  { curr: { t: t', x: x', y: y' }, plans: Array.drop 1 plans }
+    go { curr: { t, x, y }, index } =
+        case Array.index plans index of
+          Nothing -> MonadRec.Done true
+          Just { t: t', x: x', y: y' } ->
+            let
+              dt = t' - t
+              dx = Ord.abs (x' - x)
+              dy = Ord.abs (y' - y)
+            in
+              if (dx + dy > dt) || (Int.odd (dt - (dx + dy)))
+                then MonadRec.Done false
+                else
+                  MonadRec.Loop
+                    { curr: { t: t', x: x', y: y' }, index: index + 1 }
