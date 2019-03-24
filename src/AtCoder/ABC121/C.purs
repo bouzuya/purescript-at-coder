@@ -6,10 +6,10 @@ import Prelude
 
 import Control.Monad.Rec.Class as MonadRec
 import Data.Array as Array
+import Data.BigInt (BigInt)
+import Data.BigInt as BigInt
 import Data.Either (Either(..))
 import Data.Either as Either
-import Data.HugeInt (HugeInt)
-import Data.HugeInt as HugeInt
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.String as String
@@ -18,7 +18,10 @@ import Data.Tuple as Tuple
 import Partial.Unsafe as Unsafe
 
 solve :: String -> String
-solve input = Unsafe.unsafePartial (Either.fromRight (solve' input))
+solve input =
+  case solve' input of
+    Left a -> Unsafe.unsafeCrashWith a
+    Right b -> b
 
 solve' :: String -> Either String String
 solve' input = do
@@ -40,30 +43,29 @@ solve' input = do
         (\i ->
           case String.split (String.Pattern " ") i of
             [as, bs] -> do
-              a <- HugeInt.fromString as
+              a <- Int.fromString as
               b <- Int.fromString bs
               pure (Tuple a b)
             _ -> Nothing)
         abss)
   if Array.length abs == n then pure unit else Left "abs length"
-  Either.note
-    "HugeInt"
-    (String.stripPrefix (String.Pattern "HugeInt ") (show (solve'' m abs)))
+  pure (BigInt.toString (solve'' m abs))
 
-solve'' :: Int -> Array (Tuple HugeInt Int) -> HugeInt
-solve'' m abs = MonadRec.tailRec go { i: 0, m': m, n: HugeInt.fromInt 0 }
+solve'' :: Int -> Array (Tuple Int Int) -> BigInt
+solve'' m abs = MonadRec.tailRec go { i: 0, m': m, n: zero }
   where
     sorted = Array.sortWith Tuple.fst abs
     go { i, m', n } =
       case Array.index sorted i of
         Nothing -> MonadRec.Done n
         Just (Tuple a b) ->
-          let m'' = m' - b
+          let
+            m'' = m' - b
+            a' = BigInt.fromInt a
           in
             if m'' < 0
               then
-                MonadRec.Done
-                  (n + (a * (HugeInt.fromInt m')))
+                MonadRec.Done (n + (a' * (BigInt.fromInt m')))
               else
                 MonadRec.Loop
-                  { i: i + 1, m': m'', n: (n + (a * (HugeInt.fromInt b))) }
+                  { i: i + 1, m': m'', n: (n + (a' * (BigInt.fromInt b))) }
