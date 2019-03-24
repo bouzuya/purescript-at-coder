@@ -5,9 +5,9 @@ module Test.Main
 import Prelude
 
 import Effect (Effect)
-import Test.AtCoder.ABC121.A as ABC121A
+import Test.AtCoder.ABC121.B as ABC121B
 import Test.Unit.Main as TestUnitMain
 
 main :: Effect Unit
 main = TestUnitMain.runTest do
-  ABC121A.tests
+  ABC121B.tests
