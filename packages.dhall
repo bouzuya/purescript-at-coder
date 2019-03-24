@@ -116,6 +116,20 @@ let upstream =
 
 let overrides = {=}
 
-let additions = {=}
+let additions = {=} //
+      { precise =
+          mkPackage
+            [ "arrays"
+            , "globals"
+            , "integers"
+            , "generics-rep"
+            , "strings"
+            , "gen"
+            , "lists"
+            , "exceptions"
+            ]
+            "https://github.com/purescript-contrib/purescript-precise.git"
+            "v4.0.0"
+      }
 
 in  upstream // overrides // additions
