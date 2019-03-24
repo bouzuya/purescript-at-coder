@@ -4,14 +4,14 @@ module Main
 
 import Prelude
 
-import AtCoder.ABC121.B as ABC121B
+import AtCoder.ABC121.C as ABC121C
 import Effect (Effect)
 import Effect.Console as Console
 import Node.Encoding as Encoding
 import Node.FS.Sync as FS
 
 solve :: String -> String
-solve = ABC121B.solve
+solve = ABC121C.solve
 
 main :: Effect Unit
 main = do
