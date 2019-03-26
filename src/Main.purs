@@ -4,17 +4,14 @@ module Main
 
 import Prelude
 
-import AtCoder.ABC121.D as ABC121D
+import AtCoder.ABC122.A as Solver
 import Effect (Effect)
 import Effect.Console as Console
 import Node.Encoding as Encoding
 import Node.FS.Sync as FS
 
-solve :: String -> String
-solve = ABC121D.solve
-
 main :: Effect Unit
 main = do
   input <- FS.readTextFile Encoding.UTF8 "/dev/stdin"
-  output <- pure (solve input)
+  output <- pure (Solver.solve input)
   Console.log output
