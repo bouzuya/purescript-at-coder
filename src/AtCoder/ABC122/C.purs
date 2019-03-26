@@ -9,34 +9,36 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either as Either
 import Data.Int as Int
+import Data.Map (Map)
+import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Maybe as Maybe
 import Data.String as String
 import Data.String.CodeUnits as CodeUnits
 import Data.Tuple (Tuple(..))
 import Partial.Unsafe as Unsafe
 
-counts :: String -> Array Int
-counts s = MonadRec.tailRec go { a: [], i: 0, n: 0 }
+counts :: String -> Map Int Int
+counts s = MonadRec.tailRec go { a: Map.empty, i: 0, n: 0 }
   where
     ac = String.Pattern "AC"
-    go { i, a, n } =
+    go { a, i, n } =
       case CodeUnits.indexOf' ac i s of
-        Nothing ->
-          MonadRec.Done (a <> (Array.replicate ((String.length s) - i) n))
+        Nothing -> MonadRec.Done a
         Just i' ->
           MonadRec.Loop
-            { i: i' + 1
-            , a: a <> (Array.replicate (i' - i + 1) n)
+            { a: Map.insert (i' + 1) (n + 1) a
+            , i: i' + 1
             , n: n + 1
             }
 
-countRange :: Array Int -> Int -> Int -> Int
+countRange :: Map Int Int -> Int -> Int -> Int
 countRange a l r =
   let
-    i1 = Unsafe.unsafePartial (Array.unsafeIndex a l)
-    i2 = Unsafe.unsafePartial (Array.unsafeIndex a r)
+    count1 = Maybe.fromMaybe 0 (map _.value (Map.lookupLE l a))
+    count2 = Maybe.fromMaybe 0 (map _.value (Map.lookupLE r a))
   in
-    i2 - i1
+    count2 - count1
 
 parseLine :: String -> Maybe (Tuple Int Int)
 parseLine line =
