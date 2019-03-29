@@ -8,6 +8,7 @@ You can edit this file as you like.
     [ "bigints"
     , "console"
     , "effect"
+    , "memoize"
     , "node-fs"
     , "precise"
     , "psci-support"
