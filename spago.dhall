@@ -11,6 +11,7 @@ You can edit this file as you like.
     , "foreign-object"
     , "memoize"
     , "node-fs"
+    , "numbers"
     , "precise"
     , "psci-support"
     , "test-unit"
