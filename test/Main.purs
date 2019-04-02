@@ -5,7 +5,7 @@ module Test.Main
 import Prelude
 
 import Effect (Effect)
-import Test.AtCoder.ABC118.B as Solver
+import Test.AtCoder.ABC117.A as Solver
 import Test.Unit.Main as TestUnitMain
 
 main :: Effect Unit
