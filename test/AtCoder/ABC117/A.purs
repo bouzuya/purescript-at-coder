@@ -6,15 +6,8 @@ module Test.AtCoder.ABC117.A
 import Prelude
 
 import AtCoder.ABC117.A as Solver
-import Data.Array as Array
 import Data.Foldable as Foldable
-import Data.String as String
 import Data.Tuple (Tuple(..))
-import Effect.Class as Class
-import Effect.Exception as Exception
-import Node.Encoding as Encoding
-import Node.FS.Sync as FS
-import Node.Path as Path
 import Test.Unit (TestSuite)
 import Test.Unit as TestUnit
 import Test.Unit.Assert as Assert
