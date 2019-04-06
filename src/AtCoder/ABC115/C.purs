@@ -4,6 +4,7 @@ module AtCoder.ABC115.C
 
 import Prelude
 
+import Control.Monad.Rec.Class as MonadRec
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either as Either
@@ -37,12 +38,14 @@ solve'' :: Int -> Int -> Array Int -> Int
 solve'' n k hs =
   let
     sorted = Array.sort hs
-    f xs = Maybe.fromMaybe' (\_ -> Unsafe.unsafeCrashWith "f") do
-      let taken = Array.take k xs
-      head <- Array.head taken
-      last <- Array.last taken
-      pure { head, last }
-    { head: min1, last: max1 } = f sorted
-    { head: max2, last: min2 } = f (Array.reverse sorted)
+    go { i, r }
+      | i == (n - k + 1) = MonadRec.Done r
+      | otherwise =
+        let
+          minH = Unsafe.unsafePartial (Array.unsafeIndex sorted i)
+          maxH = Unsafe.unsafePartial (Array.unsafeIndex sorted (i + k - 1))
+          newR = maxH - minH
+        in
+          MonadRec.Loop { i: i + 1, r: min r newR }
   in
-    min (max1 - min1) (max2 - min2)
+    MonadRec.tailRec go { i: 0, r: top }
