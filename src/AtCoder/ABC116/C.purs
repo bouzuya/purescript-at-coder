@@ -4,14 +4,12 @@ module AtCoder.ABC116.C
 
 import Prelude
 
-import Control.Monad.ST as ST
-import Control.Monad.ST.Internal as STRef
+import Control.Monad.Rec.Class as MonadRec
 import Data.Array as Array
-import Data.Array.ST as STArray
+import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..))
 import Data.Either as Either
 import Data.Int as Int
-import Data.Maybe as Maybe
 import Data.String as String
 import Partial.Unsafe as Unsafe
 
@@ -32,25 +30,17 @@ solve' input = do
   pure (show (solve'' n hs))
 
 solve'' :: Int -> Array Int -> Int
-solve'' n hs = ST.run do
-  countRef <- STRef.new 0
-  continueRef <- STRef.new false
-  updatedRef <- STRef.new true
-  hsta <- STArray.unsafeThaw hs
-  ST.while (STRef.read updatedRef) do
-    void (STRef.write false continueRef)
-    void (STRef.write false updatedRef)
-    ST.for 0 n \i -> do
-      hMaybe <- STArray.peek i hsta
-      h <- Maybe.maybe' (\_ -> Unsafe.unsafeCrashWith "hMaybe") pure hMaybe
-      if h > 0
-        then do
-          continue <- STRef.read continueRef
-          when (not continue) do
-            void (STRef.modify (add 1) countRef)
-            void (STRef.write true continueRef)
-            void (STRef.write true updatedRef)
-          void (STArray.poke i (h - 1) hsta)
-        else
-          void (STRef.write false continueRef)
-  STRef.read countRef
+solve'' n hs = MonadRec.tailRec go { count: 0, i: 0, updated: true }
+  where
+    go { count, i, updated }
+      | not updated = MonadRec.Done count
+      | otherwise =
+          let
+            newCount =
+              Array.length
+                (Array.filter
+                  NonEmptyArray.head
+                  (Array.group (map (\h -> h > i) hs)))
+          in
+            MonadRec.Loop
+              { count: count + newCount, i: i + 1, updated: newCount > 0 }
