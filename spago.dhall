@@ -7,6 +7,7 @@ You can edit this file as you like.
 , dependencies =
     [ "bigints"
     , "console"
+    , "debug"
     , "effect"
     , "foreign-object"
     , "memoize"
