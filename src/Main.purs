@@ -4,7 +4,7 @@ module Main
 
 import Prelude
 
-import AtCoder.ABC114.A as Solver
+import AtCoder.ABC114.B as Solver
 import Effect (Effect)
 import Effect.Console as Console
 import Node.Encoding as Encoding
