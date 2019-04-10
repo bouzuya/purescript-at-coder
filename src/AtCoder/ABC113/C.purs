@@ -36,22 +36,23 @@ solve' input = do
           [n, m] -> Maybe.Just { n, m }
           _ -> Maybe.Nothing
   let
-    pys =
-      map
-        (\pyLine ->
-          case
-            (Array.mapMaybe
-              Int.fromString
-              (String.split (String.Pattern " ") pyLine)) of
-            [p, y] -> { p, y }
-            _ -> Unsafe.unsafeCrashWith "p y line")
-        (Array.drop 1 lines)
+    pys = ST.run do
+      sta <- STArray.empty
+      ST.for 0 m \i -> do
+        case
+          Array.mapMaybe
+            Int.fromString
+            (String.split
+              (String.Pattern " ")
+              (Unsafe.unsafePartial (Array.unsafeIndex lines (i + 1)))) of
+          [p, y] -> void (STArray.push { p, y, i } sta)
+          _ -> Unsafe.unsafeCrashWith "p y line"
+      STArray.unsafeFreeze sta
   pure (String.joinWith "\n" (solve'' n m pys))
 
-solve'' :: Int -> Int -> Array { p :: Int, y :: Int } -> Array String
+solve'' :: Int -> Int -> Array { p :: Int, y :: Int, i :: Int } -> Array String
 solve'' n m pys = ST.run do
-  stpys <-
-    STArray.unsafeThaw (Array.mapWithIndex (\i { p, y } -> { p, y, i }) pys)
+  stpys <- STArray.unsafeThaw pys
   _ <-
     STArray.sortBy
       (\{ y: y1, p: p1 } { y: y2, p: p2 } ->
