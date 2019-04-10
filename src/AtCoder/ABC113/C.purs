@@ -66,26 +66,23 @@ solve'' n m pys = ST.run do
     Array.foldRecM
       (\{ p', x } { p, i } -> do
         let x' = (if p' /= p then 0 else x) + 1
-        _ <- STArray.poke i (pad (show (p * 1000000 + x'))) sta
+        _ <- STArray.poke i (pad p <> pad x') sta
         pure { p': p, x: x' })
       { p': -1, x: 0 }
       pys'
   STArray.unsafeFreeze sta
 
   where
-    pad :: String -> String
-    pad s =
-      case CodeUnits.length s of
-        0 ->  "000000000000"
-        1 ->  "00000000000" <> s
-        2 ->  "0000000000" <> s
-        3 ->  "000000000" <> s
-        4 ->  "00000000" <> s
-        5 ->  "0000000" <> s
-        6 ->  "000000" <> s
-        7 ->  "00000" <> s
-        8 ->  "0000" <> s
-        9 ->  "000" <> s
-        10 -> "00" <> s
-        11 -> "0" <> s
-        _ -> s
+    pad :: Int -> String
+    pad x =
+      let
+        s = show x
+      in
+        case CodeUnits.length s of
+          0 -> "000000"
+          1 -> "00000" <> s
+          2 -> "0000" <> s
+          3 -> "000" <> s
+          4 -> "00" <> s
+          5 -> "0" <> s
+          _ -> s
