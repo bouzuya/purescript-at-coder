@@ -61,18 +61,16 @@ solve'' n m pys = ST.run do
           EQ -> compare y1 y2)
       stpys
   pys' <- STArray.unsafeFreeze stpys
-  sta <- STArray.empty
+  sta <- STArray.unsafeThaw (Array.replicate m "")
   _ <-
     Array.foldRecM
       (\{ p', x } { p, i } -> do
         let x' = (if p' /= p then 0 else x) + 1
-        _ <- STArray.push { s: pad p <> pad x', i } sta
+        _ <- STArray.poke i (pad p <> pad x') sta
         pure { p': p, x: x' })
       { p': -1, x: 0 }
       pys'
-  _ <- STArray.sortWith _.i sta
-  cs' <- STArray.unsafeFreeze sta
-  pure (map _.s cs')
+  STArray.unsafeFreeze sta
 
   where
     pad :: Int -> String
