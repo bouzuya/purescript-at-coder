@@ -37,14 +37,14 @@ solve' input = do
           _ -> Maybe.Nothing
   let
     pys =
-      Array.mapMaybe
+      map
         (\pyLine ->
           case
             (Array.mapMaybe
               Int.fromString
               (String.split (String.Pattern " ") pyLine)) of
-            [p, y] -> Maybe.Just { p, y }
-            _ -> Maybe.Nothing)
+            [p, y] -> { p, y }
+            _ -> Unsafe.unsafeCrashWith "p y line")
         (Array.drop 1 lines)
   pure (String.joinWith "\n" (solve'' n m pys))
 
