@@ -30,8 +30,9 @@
   },
   "scripts": {
     "build": "spago bundle",
-    "docs": "spago docs",
     "bundle": "parcel build --bundle-node-modules --no-autoinstall --no-source-maps --out-dir . --out-file bundle.js --target node index.js",
+    "copy": "npm run prepare && cat bundle.js | pbcopy",
+    "docs": "spago docs",
     "prepare": "npm-run-all -s build bundle",
     "purs": "purs",
     "repl": "spago repl",
