@@ -4,7 +4,7 @@ module Main
 
 import Prelude
 
-import AtCoder.Tenka12019Beginner.A as Solver
+import AtCoder.Tenka12019Beginner.B as Solver
 import Effect (Effect)
 import Effect.Console as Console
 import Node.Encoding as Encoding
