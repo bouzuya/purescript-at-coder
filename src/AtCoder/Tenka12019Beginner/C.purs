@@ -25,34 +25,32 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
   pure (show (solve' n s))
 
 solve' :: Int -> String -> Int
-solve' n s
-  | n == 1 = 0
-  | otherwise = ST.run do
-    bs <- STArray.unsafeThaw (Array.replicate (n + 1) 0)
-    ws <- STArray.unsafeThaw (Array.replicate (n + 1) 0)
-    bcRef <- STRef.new 0
-    wcRef <- STRef.new 0
-    ST.for 0 n \i -> do
-      bc <- STRef.read bcRef
-      wc <- STRef.read wcRef
-      let
-        isBlack = (CodeUnits.charAt i s) == (Maybe.Just '#')
-        bc' = bc + if isBlack then 1 else 0
-        wc' = wc + if isBlack then 0 else 1
-      _ <- STArray.poke (i + 1) bc' bs
-      _ <- STArray.poke (i + 1) wc' ws
-      _ <- STRef.write bc' bcRef
-      _ <- STRef.write wc' wcRef
-      pure unit
+solve' n s = ST.run do
+  bs <- STArray.unsafeThaw (Array.replicate (n + 1) 0)
+  ws <- STArray.unsafeThaw (Array.replicate (n + 1) 0)
+  bcRef <- STRef.new 0
+  wcRef <- STRef.new 0
+  ST.for 0 n \i -> do
+    bc <- STRef.read bcRef
     wc <- STRef.read wcRef
-    _ <- STArray.poke 0 0 bs
-    _ <- STArray.poke 0 0 ws
-    minRef <- STRef.new top
-    ST.for 0 (n + 1) \i -> do
-      m <- STRef.read minRef
-      bMaybe <- STArray.peek i bs
-      let b = Unsafe.unsafePartial (Maybe.fromJust bMaybe)
-      wMaybe <- STArray.peek i ws
-      let w = wc - (Unsafe.unsafePartial (Maybe.fromJust wMaybe))
-      STRef.write (min (b + w) m) minRef
-    STRef.read minRef
+    let
+      isBlack = (CodeUnits.charAt i s) == (Maybe.Just '#')
+      bc' = bc + if isBlack then 1 else 0
+      wc' = wc + if isBlack then 0 else 1
+    _ <- STArray.poke (i + 1) bc' bs
+    _ <- STArray.poke (i + 1) wc' ws
+    _ <- STRef.write bc' bcRef
+    _ <- STRef.write wc' wcRef
+    pure unit
+  wc <- STRef.read wcRef
+  _ <- STArray.poke 0 0 bs
+  _ <- STArray.poke 0 0 ws
+  minRef <- STRef.new top
+  ST.for 0 (n + 1) \i -> do
+    m <- STRef.read minRef
+    bMaybe <- STArray.peek i bs
+    let b = Unsafe.unsafePartial (Maybe.fromJust bMaybe)
+    wMaybe <- STArray.peek i ws
+    let w = wc - (Unsafe.unsafePartial (Maybe.fromJust wMaybe))
+    STRef.write (min (b + w) m) minRef
+  STRef.read minRef
