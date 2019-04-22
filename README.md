@@ -1,10 +1,11 @@
 # purescript-at-coder
 
-
 ## How to build
 
 ```bash
 npm install
+TASK=ABC111B npm start # copy code to clipboard
+TASK=ABC111B npm test # run test
 ```
 
 ## License
