@@ -45,7 +45,7 @@ assertEquals message expected actual
 
 testTask :: Sample -> Task -> Test
 testTask { input, output, number } task =
-  assertEquals ("Sample " <> (show number) <> ":") (getSolve task input) output
+  assertEquals ("Sample " <> (show number) <> ":") output (getSolve task input)
 
 main :: Effect Unit
 main = do
