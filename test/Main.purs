@@ -8,6 +8,8 @@ import Data.Array as Array
 import Data.Foldable as Foldable
 import Data.Maybe as Maybe
 import Data.String as String
+import Data.Traversable as Traversable
+import Debug.Trace as Debug
 import Effect (Effect)
 import Effect.Class as Class
 import Node.Encoding as Encoding
@@ -32,6 +34,14 @@ readSample dir task i = do
   output <- FS.readTextFile Encoding.UTF8 outputFile
   pure { input, output, number: i }
 
+readSamples :: FilePath -> Task -> Effect (Array Sample)
+readSamples dir task = do
+  let taskDir = Path.concat [dir, task]
+  fileCount <- map Array.length (FS.readdir taskDir)
+  Traversable.traverse
+    (readSample dir task)
+    (Array.range 1 (fileCount / 2))
+
 assertEquals :: forall a. Eq a => Show a => String -> a -> a -> Test
 assertEquals message expected actual
   | actual == expected = TestUnit.success
@@ -54,9 +64,7 @@ main = do
     Maybe.Nothing -> pure unit
     Maybe.Just task -> do
       TestUnitMain.runTest do
-      let dir = "test"
       TestUnit.test (task <> " samples") do
-        fileCount <- Class.liftEffect (map Array.length (FS.readdir dir))
-        Foldable.for_ (Array.range 1 (fileCount / 2)) \i -> do
-          sample <- Class.liftEffect (readSample dir task i)
+        samples <- Class.liftEffect (readSamples "test" task)
+        Foldable.for_ samples \sample -> do
           testTask sample task
