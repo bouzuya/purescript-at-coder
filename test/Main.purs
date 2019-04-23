@@ -9,7 +9,6 @@ import Data.Foldable as Foldable
 import Data.Maybe as Maybe
 import Data.String as String
 import Data.Traversable as Traversable
-import Debug.Trace as Debug
 import Effect (Effect)
 import Effect.Class as Class
 import Node.Encoding as Encoding
