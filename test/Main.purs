@@ -52,8 +52,8 @@ assertEquals message expected actual
         , "expected " <> (show expected) <> ", got " <> (show actual)
         ])
 
-testTask :: Sample -> Task -> Test
-testTask { input, output, number } task =
+testTask :: Task -> Sample -> Test
+testTask task { input, output, number } =
   assertEquals ("Sample " <> (show number) <> ":") output (getSolve task input)
 
 main :: Effect Unit
@@ -62,8 +62,8 @@ main = do
   case taskMaybe of
     Maybe.Nothing -> pure unit
     Maybe.Just task -> do
+      samples <- readSamples "test" task
       TestUnitMain.runTest do
-      TestUnit.test (task <> " samples") do
-        samples <- Class.liftEffect (readSamples "test" task)
-        Foldable.for_ samples \sample -> do
-          testTask sample task
+        TestUnit.test
+          (String.joinWith " " [task, show (Array.length samples), "samples"])
+          (Foldable.for_ samples (testTask task))
