@@ -9,14 +9,11 @@ import Prelude
 import Data.Array as Array
 import Data.Either as Either
 import Data.Int as Int
-import Data.Maybe as Maybe
 import Data.String as String
-import Debug.Trace as Debug
 import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class as Class
 import Effect.Ref as Ref
-import Math as Math
 import Node.Encoding as Encoding
 import Node.Process as Process
 import Node.Stream as Stream
