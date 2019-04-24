@@ -1,5 +1,5 @@
--- abc108_c
-module ABC108C
+-- arc102_a or abc108_c
+module ARC102A
   ( main
   , solve
   ) where
@@ -7,8 +7,6 @@ module ABC108C
 import Prelude
 
 import Data.Array as Array
-import Data.BigInt (BigInt)
-import Data.BigInt as BigInt
 import Data.Either as Either
 import Data.Int as Int
 import Data.String as String
