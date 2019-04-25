@@ -80,10 +80,8 @@ solve' n k xs = ST.run do
     let
       nc' = min (Array.length nxs) (k' - (min (Array.length pxs) i))
       pc' = k' - nc'
-      pi = max 0 (pc' - 1)
-      ni = max 0 (nc' - 1)
-      pcost = Unsafe.unsafePartial (Array.unsafeIndex pxs pi)
-      ncost = Ord.abs (Unsafe.unsafePartial (Array.unsafeIndex nxs ni))
+      pcost = Maybe.fromMaybe 0 (Array.index pxs (pc' - 1))
+      ncost = Ord.abs (Maybe.fromMaybe 0 (Array.index nxs (nc' - 1)))
       cost = if pcost < ncost then pcost * 2 + ncost else pcost + ncost * 2
     STRef.modify (min cost) minCostRef
   STRef.read minCostRef
