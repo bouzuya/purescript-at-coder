@@ -77,4 +77,4 @@ solve' s k =
               Unsafe.unsafePartial
                 (Maybe.fromJust (Int.fromString (BigInt.toString k)))
           in
-            Maybe.fromMaybe last (Array.index cs k')
+            Maybe.fromMaybe last (Array.index cs (k' - 1))
