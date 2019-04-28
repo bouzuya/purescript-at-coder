@@ -64,26 +64,29 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
 
 solve' :: Int -> Array Int -> Int
 solve' n as = ST.run do
-  sta <- STArray.empty
-  maxRef <- STRef.new Maybe.Nothing
+  sta1 <- STArray.unsafeThaw (Array.replicate n 1)
+  sta2 <- STArray.unsafeThaw (Array.replicate n 1)
+  xRef <- STRef.new 0
   ST.for 0 n \i -> do
-    xRef <-
-      STRef.new
-        (Unsafe.unsafePartial
-          (Maybe.fromJust
-            (Array.index as (if i == n - 1 then 0 else n - 1))))
-    max' <- STRef.read maxRef
-    ST.for 0 n \j -> do
-      x <- STRef.read xRef
-      if (x == 1) || (Maybe.maybe false (\max'' -> x < max'') max')
-        then pure unit
-        else do
-          if j == i
-            then pure unit
-            else do
-              let y = Unsafe.unsafePartial (Maybe.fromJust (Array.index as j))
-              void (STRef.write (gcd x y) xRef)
     x <- STRef.read xRef
-    void (STRef.write (max max' (Maybe.Just x)) maxRef)
-  max' <- STRef.read maxRef
-  pure (Unsafe.unsafePartial (Maybe.fromJust max'))
+    let
+      y = Unsafe.unsafePartial (Maybe.fromJust (Array.index as i))
+      x' = gcd x y
+    void (STRef.write x' xRef)
+    void (STArray.poke i x' sta1)
+  void (STRef.write 0 xRef)
+  ST.for 0 n \i -> do
+    x <- STRef.read xRef
+    let
+      y = Unsafe.unsafePartial (Maybe.fromJust (Array.index as (n - i - 1)))
+      x' = gcd x y
+    void (STRef.write x' xRef)
+    void (STArray.poke (n - i - 1) x' sta2)
+  a1 <- (STArray.unsafeFreeze sta1)
+  a2 <- (STArray.unsafeFreeze sta2)
+  maxRef <- STRef.new bottom
+  ST.for 0 n \i -> do -- i を抜いたとき
+    x' <- map (Maybe.fromMaybe 0) (STArray.peek (i - 1) sta1)
+    y' <- map (Maybe.fromMaybe 0) (STArray.peek (i + 1) sta2)
+    void (STRef.modify (max (gcd x' y')) maxRef)
+  STRef.read maxRef
