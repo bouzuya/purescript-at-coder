@@ -8,12 +8,9 @@ import Prelude
 
 import Data.Array as Array
 import Data.Either as Either
-import Data.Int as Int
 import Data.Maybe as Maybe
 import Data.String as String
 import Data.String.CodeUnits as CodeUnits
-import Data.String.Regex.Unsafe as Regex
-import Data.Tuple as Tuple
 import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class as Class
