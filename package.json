@@ -29,7 +29,7 @@
     "type": "git"
   },
   "scripts": {
-    "build": "spago --verbose bundle --main ${TASK}",
+    "build": "spago --verbose bundle --main ${TASK} --no-build",
     "bundle": "parcel build --bundle-node-modules --no-autoinstall --no-source-maps --out-dir . --out-file bundle.js --target node index.js",
     "copy": "cat bundle.js | pbcopy",
     "docs": "spago docs",
@@ -37,7 +37,7 @@
     "purs": "purs",
     "repl": "spago repl",
     "spago": "spago",
-    "start": "npm-run-all -s env build bundle copy",
+    "start": "npm-run-all -s env test build bundle copy",
     "test": "spago test"
   }
 }
