@@ -6,12 +6,8 @@ module ABC103B
 
 import Prelude
 
-import Data.Array as Array
 import Data.Either as Either
-import Data.Foldable as Foldable
-import Data.Int as Int
 import Data.Maybe as Maybe
-import Data.Ord as Ord
 import Data.String as String
 import Data.String.CodeUnits as CodeUnits
 import Data.Tuple as Tuple
