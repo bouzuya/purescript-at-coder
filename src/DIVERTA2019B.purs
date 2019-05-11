@@ -6,7 +6,8 @@ module DIVERTA2019B
 
 import Prelude
 
-import Control.MonadZero as MonadZero
+import Control.Monad.ST as ST
+import Control.Monad.ST.Internal as STRef
 import Data.Array as Array
 import Data.Either as Either
 import Data.Int as Int
@@ -68,11 +69,14 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
   pure ((show (solve' r g b n)) <> "\n")
 
 solve' :: Int -> Int -> Int -> Int -> Int
-solve' r g b n = Array.length do
-  r' <- Array.range 0 (min 3000 (n / r))
-  MonadZero.guard ((r * r') <= n)
-  g' <- Array.range 0 (min 3000 (n / g))
-  MonadZero.guard (((r * r') + (g * g')) <= n)
-  MonadZero.guard (((n - ((r * r') + (g * g'))) `mod` b) == 0)
-  pure unit
+solve' r g b n = ST.run do
+  countRef <- STRef.new 0
+  ST.for 0 ((min 3000 (n / r)) + 1) \r' -> do
+    let r'' = r * r'
+    ST.for 0 ((max 0 (min 3000 (((n - r'') / g)))) + 1) \g' -> do
+      let g'' = g * g'
+      if ((r'' + g'') <= n) && (((n - (r'' + g'')) `mod` b) == 0)
+        then void (STRef.modify (add one) countRef)
+        else pure unit
+  STRef.read countRef
 
