@@ -1,11 +1,12 @@
--- diverta2019_a
-module DIVERTA2019A
+-- diverta2019_b
+module DIVERTA2019B
   ( main
   , solve
   ) where
 
 import Prelude
 
+import Control.MonadZero as MonadZero
 import Data.Array as Array
 import Data.Either as Either
 import Data.Int as Int
@@ -59,8 +60,19 @@ int2 s =
 
 solve :: String -> String
 solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
-  Tuple.Tuple n k <- Either.note "n k" (int2 (String.trim input))
-  pure ((show (solve' n k)) <> "\n")
+  { r, g, b, n } <-
+    Either.note "r g b n"
+      case Array.mapMaybe Int.fromString (splitBySP (String.trim input)) of
+        [r, g, b, n] -> Maybe.Just { r, g, b, n }
+        _ -> Maybe.Nothing
+  pure ((show (solve' r g b n)) <> "\n")
 
-solve' :: Int -> Int -> Int
-solve' n k = n - k + 1
+solve' :: Int -> Int -> Int -> Int -> Int
+solve' r g b n = Array.length do
+  r' <- Array.range 0 (min 3000 (n / r))
+  MonadZero.guard ((r * r') <= n)
+  g' <- Array.range 0 (min 3000 (n / g))
+  MonadZero.guard (((r * r') + (g * g')) <= n)
+  MonadZero.guard (((n - ((r * r') + (g * g'))) `mod` b) == 0)
+  pure unit
+
