@@ -11,11 +11,8 @@ import Control.Monad.ST.Internal as STRef
 import Data.Array as Array
 import Data.Either as Either
 import Data.Int as Int
-import Data.Maybe (Maybe)
 import Data.Maybe as Maybe
 import Data.String as String
-import Data.Tuple (Tuple)
-import Data.Tuple as Tuple
 import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class as Class
@@ -53,12 +50,6 @@ writeStdout s =
 splitBySP :: String -> Array String
 splitBySP s = String.split (String.Pattern " ") s
 
-int2 :: String -> Maybe (Tuple Int Int)
-int2 s =
-  case Array.mapMaybe Int.fromString (splitBySP s) of
-    [a, b] -> Maybe.Just (Tuple.Tuple a b)
-    _ -> Maybe.Nothing
-
 solve :: String -> String
 solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
   { r, g, b, n } <-
@@ -75,8 +66,9 @@ solve' r g b n = ST.run do
     let r'' = r * r'
     ST.for 0 ((max 0 (min 3000 (((n - r'') / g)))) + 1) \g' -> do
       let g'' = g * g'
-      if ((r'' + g'') <= n) && (((n - (r'' + g'')) `mod` b) == 0)
-        then void (STRef.modify (add one) countRef)
+      let n'' = n - (r'' + g'')
+      if n'' >= 0 && ((n'' `mod` b) == 0)
+        then void (STRef.modify (add 1) countRef)
         else pure unit
   STRef.read countRef
 
