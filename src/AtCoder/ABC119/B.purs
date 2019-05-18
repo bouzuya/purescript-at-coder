@@ -7,8 +7,6 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either as Either
-import Data.HugeNum (HugeNum)
-import Data.HugeNum as HugeNum
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Maybe as Maybe

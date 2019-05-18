@@ -5,7 +5,7 @@ module AtCoder.ABC115.B
 import Prelude
 
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either)
 import Data.Either as Either
 import Data.Foldable as Foldable
 import Data.Int as Int

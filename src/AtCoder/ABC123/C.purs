@@ -7,7 +7,7 @@ import Prelude
 import Data.Array as Array
 import Data.BigInt as BigInt
 import Data.BigInt as BitInt
-import Data.Either (Either(..))
+import Data.Either (Either)
 import Data.Either as Either
 import Data.Maybe as Maybe
 import Data.String as String

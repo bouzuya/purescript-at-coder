@@ -13,7 +13,6 @@ import Data.Maybe as Maybe
 import Data.Ord as Ord
 import Data.String as String
 import Data.Tuple as Tuple
-import Debug.Trace as Debug
 import Partial.Unsafe as Unsafe
 
 solve :: String -> String

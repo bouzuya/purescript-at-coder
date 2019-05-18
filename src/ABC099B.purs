@@ -13,7 +13,7 @@ import Data.Int as Int
 import Data.Maybe (Maybe)
 import Data.Maybe as Maybe
 import Data.String as String
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple)
 import Data.Tuple as Tuple
 import Effect (Effect)
 import Effect.Aff as Aff

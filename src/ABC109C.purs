@@ -6,7 +6,6 @@ module ABC109C
 
 import Prelude
 
-import Control.Monad.Rec.Class as MonadRec
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either as Either
@@ -15,7 +14,6 @@ import Data.Maybe as Maybe
 import Data.NonEmpty as NonEmpty
 import Data.Ord as Ord
 import Data.String as String
-import Data.String.CodeUnits as CodeUnits
 import Data.Tuple as Tuple
 import Effect (Effect)
 import Effect.Aff as Aff
