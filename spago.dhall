@@ -18,6 +18,7 @@ You can edit this file as you like.
     , "numbers"
     , "precise"
     , "psci-support"
+    , "rationals"
     , "test-unit"
     ]
 , packages =

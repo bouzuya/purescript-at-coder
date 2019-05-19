@@ -14,6 +14,10 @@ import Data.Int as Int
 import Data.Int.Bits as Bits
 import Data.Maybe (Maybe)
 import Data.Maybe as Maybe
+import Data.Ratio (Ratio, (%))
+import Data.Ratio as Ratio
+import Data.Rational (Rational)
+import Data.Rational as Rational
 import Data.String as String
 import Data.Tuple (Tuple)
 import Data.Tuple as Tuple
@@ -66,13 +70,13 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
   Tuple.Tuple n k <- Either.note "n k" (int2 (String.trim input))
   pure ((show (solve' n k)) <> "\n")
 
-f :: Int -> Number -> Int
+f :: Int -> Rational -> Int
 f a k = ST.run do
   iRef <- STRef.new 0
   ST.while
     do
       i <- STRef.read iRef
-      pure ((Int.toNumber (Bits.shl 1 i)) < k)
+      pure ((Rational.fromInt (Bits.shl 1 i)) < k)
     (void (STRef.modify (add one) iRef))
   i <- STRef.read iRef
   pure (if i > a then 0 else i)
@@ -85,13 +89,13 @@ solve' n k = ST.run do
     a =
       Unsafe.unsafePartial
         (Maybe.fromJust (Int.fromNumber (Math.ceil ((Math.log k') / Math.ln2))))
-  xRef <- STRef.new 0.0
+  xRef <- STRef.new (Rational.fromInt 0)
   ST.for 1 (n + 1) \i -> do
-    let j = f a (k' / (Int.toNumber i))
+    let j = f a (k % i)
     if j == 0
       then pure unit
       else
         void
-          (STRef.modify (add (1.0 / ((Int.toNumber (Bits.shl 1 j)) * n'))) xRef)
-  STRef.read xRef
+          (STRef.modify (add (1 % ((Bits.shl 1 j) * n))) xRef)
+  map Rational.toNumber (STRef.read xRef)
 
