@@ -9,15 +9,13 @@ import Prelude
 import Control.Monad.ST as ST
 import Control.Monad.ST.Internal as STRef
 import Data.Array as Array
+import Data.BigInt as BigInt
 import Data.Either as Either
 import Data.Int as Int
-import Data.Int.Bits as Bits
 import Data.Maybe (Maybe)
 import Data.Maybe as Maybe
-import Data.Ratio (Ratio, (%))
+import Data.Ratio ((%))
 import Data.Ratio as Ratio
-import Data.Rational (Rational)
-import Data.Rational as Rational
 import Data.String as String
 import Data.Tuple (Tuple)
 import Data.Tuple as Tuple
@@ -25,7 +23,6 @@ import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class as Class
 import Effect.Ref as Ref
-import Math as Math
 import Node.Encoding as Encoding
 import Node.Process as Process
 import Node.Stream as Stream
@@ -70,32 +67,25 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
   Tuple.Tuple n k <- Either.note "n k" (int2 (String.trim input))
   pure ((show (solve' n k)) <> "\n")
 
-f :: Int -> Rational -> Int
-f a k = ST.run do
-  iRef <- STRef.new 0
-  ST.while
-    do
-      i <- STRef.read iRef
-      pure ((Rational.fromInt (Bits.shl 1 i)) < k)
-    (void (STRef.modify (add one) iRef))
-  i <- STRef.read iRef
-  pure (if i > a then 0 else i)
-
 solve' :: Int -> Int -> Number
 solve' n k = ST.run do
   let
-    n' = Int.toNumber n
-    k' = Int.toNumber k
-    a =
-      Unsafe.unsafePartial
-        (Maybe.fromJust (Int.fromNumber (Math.ceil ((Math.log k') / Math.ln2))))
-  xRef <- STRef.new (Rational.fromInt 0)
+    n' = one % (BigInt.fromInt n)
+    t' = one % (BigInt.fromInt 2)
+  xRef <- STRef.new ((BigInt.fromInt 0) % one)
   ST.for 1 (n + 1) \i -> do
-    let j = f a (k % i)
-    if j == 0
-      then pure unit
-      else
-        void
-          (STRef.modify (add (1 % ((Bits.shl 1 j) * n))) xRef)
-  map Rational.toNumber (STRef.read xRef)
-
+    tmpRef <- STRef.new n'
+    nowRef <- STRef.new i
+    ST.while
+      do
+        now <- STRef.read nowRef
+        pure (now < k)
+      do
+        void (STRef.modify (mul 2) nowRef)
+        void (STRef.modify (mul t') tmpRef)
+    tmp <- STRef.read tmpRef
+    STRef.modify (add tmp) xRef
+  x <- STRef.read xRef
+  pure
+    ((BigInt.toNumber (Ratio.numerator x))
+      / (BigInt.toNumber (Ratio.denominator x)))
