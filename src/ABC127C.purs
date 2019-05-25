@@ -74,7 +74,8 @@ solve' _ _ lrs = MonadRec.tailRec go { i: 0, min': bottom, max': top }
   where
     go { i, min', max' } =
       case Array.index lrs i of
-        Maybe.Nothing -> MonadRec.Done (max' - min' + 1)
+        Maybe.Nothing ->
+          MonadRec.Done (if max' >= min' then (max' - min' + 1) else 0)
         Maybe.Just (Tuple.Tuple l r) ->
           MonadRec.Loop
             { i: i + 1
