@@ -16,6 +16,7 @@ import Node.FS.Sync as FS
 import Node.Path (FilePath)
 import Node.Path as Path
 import Node.Process as Process
+import Test.Helper as Helper
 import Test.Unit (Test)
 import Test.Unit as TestUnit
 import Test.Unit.Main as TestUnitMain
@@ -58,6 +59,7 @@ testTask task { input, output, number } =
 
 main :: Effect Unit
 main = do
+  TestUnitMain.runTest Helper.tests
   taskMaybe <- Class.liftEffect (Process.lookupEnv "TASK") -- e.g. "ABC111B"
   case taskMaybe of
     Maybe.Nothing -> pure unit
