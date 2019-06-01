@@ -5,11 +5,8 @@ module MSOLUTIONS2019B
 
 import Prelude
 
-import Control.Monad.Rec.Class as MonadRec
 import Data.Array as Array
 import Data.Either as Either
-import Data.Int as Int
-import Data.Maybe as Maybe
 import Data.String as String
 import Data.String.CodeUnits as CodeUnits
 import Effect (Effect)
