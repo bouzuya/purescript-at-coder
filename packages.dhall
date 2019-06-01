@@ -114,6 +114,9 @@ let mkPackage =
 let upstream =
       https://raw.githubusercontent.com/purescript/package-sets/psc-0.12.3-20190330/src/packages.dhall sha256:cb0cdde5926cfdff5bd17bb2508a85b5eee794088f253f59f884766828ba722c
 
+let bouzuya =
+      https://raw.githubusercontent.com/bouzuya/purescript-bouzuya-packages/20190601/bouzuya.dhall sha256:912e0b837e14ce5087b9b244693025d14d0a0b6d2db56ea0409c63178589bc50
+
 let overrides = {=}
 
 let additions =
@@ -132,5 +135,6 @@ let additions =
               "https://github.com/purescript-contrib/purescript-precise.git"
               "v4.0.0"
           }
+      //  bouzuya
 
 in  upstream // overrides // additions
