@@ -10,6 +10,7 @@ import Bouzuya.ST.PriorityQueue as PriorityQueue
 import Control.Monad.ST as ST
 import Control.Monad.ST.Internal as STRef
 import Data.Array as Array
+import Data.Array.ST as STArray
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Either as Either
@@ -20,34 +21,17 @@ import Data.String as String
 import Data.Tuple (Tuple)
 import Data.Tuple as Tuple
 import Effect (Effect)
-import Effect.Aff as Aff
-import Effect.Class as Class
-import Effect.Ref as Ref
 import Node.Encoding as Encoding
+import Node.FS.Sync as FS
 import Node.Process as Process
 import Node.Stream as Stream
 import Partial.Unsafe as Unsafe
 
 main :: Effect Unit
-main = Aff.launchAff_ do
-  input <- readStdin
+main = do
+  input <- FS.readTextFile Encoding.UTF8 "/dev/stdin"
   output <- pure (solve input)
-  Class.liftEffect (writeStdout output)
-
-readStdin :: Aff.Aff String
-readStdin =
-  let r = Process.stdin
-  in
-    Aff.makeAff
-      (\callback -> do
-        ref <- Ref.new ""
-        Stream.onDataString r Encoding.UTF8 \s -> do
-          buffer <- Ref.read ref
-          Ref.write (buffer <> s) ref
-        Stream.onEnd r do
-          buffer <- Ref.read ref
-          callback (pure buffer)
-        pure mempty)
+  writeStdout output
 
 writeStdout :: String -> Effect Unit
 writeStdout s =
@@ -70,25 +54,23 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
   let lines = splitByNL input
   nmLine <- Either.note "nmLine" (Array.head (Array.take 1 lines))
   asLine <-
-    Either.note "asLine" (Array.head (Array.drop 1 (Array.take 2 lines)))
+    Either.note "asLine" (Array.last (Array.take 2 lines))
   let bcLines = Array.drop 2 lines
   Tuple.Tuple n m <- Either.note "n m " (int2 nmLine)
-  let as = Array.mapMaybe Int.fromString (splitBySP asLine)
-  let bcs = Array.mapMaybe int2 bcLines
+  let
+    as =
+      Array.mapMaybe
+        ((map (flip Tuple.Tuple 1)) <<< Int.fromString)
+        (splitBySP asLine)
+    bcs =
+      Array.mapMaybe ((map Tuple.swap) <<< int2) bcLines
   pure ((BigInt.toString (solve' n m as bcs)) <> "\n")
 
-type Count = Int
-type Value = Int
-data X = X Count Value
-derive instance eqX :: Eq X
-instance ordX :: Ord X where
-  compare (X _ a) (X _ b) = compare a b
-
-solve' :: Int -> Int -> Array Int -> Array (Tuple Int Int) -> BigInt
+solve' :: Int -> Int -> Array (Tuple Int Int) -> Array (Tuple Int Int) -> BigInt
 solve' n _ as bcs = ST.run do
-  q <- PriorityQueue.fromArray (map (X 1) as)
-  ST.foreach bcs \(Tuple.Tuple b c) -> do
-    PriorityQueue.enqueue (X b c) q
+  sta <- STArray.unsafeThaw as
+  _ <- STArray.pushAll bcs sta
+  q <- PriorityQueue.fromSTArray sta
   countRef <- STRef.new 0
   resultRef <- STRef.new zero
   ST.while
@@ -96,13 +78,13 @@ solve' n _ as bcs = ST.run do
       count <- STRef.read countRef
       maxMaybe <- PriorityQueue.dequeue q
       let
-        (X c v) = Unsafe.unsafePartial (Maybe.fromJust maxMaybe)
+        (Tuple.Tuple v c) = Unsafe.unsafePartial (Maybe.fromJust maxMaybe)
         count' = count + c
         continue = count' < n
-        v' = BigInt.fromInt v
-        c' = BigInt.fromInt (min (n - count) c)
-      void (STRef.write count' countRef)
-      void (STRef.modify (add (c' * v')) resultRef)
+        v' = BigInt.fromInt v -- max 10^9
+        c' = BigInt.fromInt (min (n - count) c) -- max 10^5
+      _ <- STRef.write count' countRef
+      _ <- STRef.modify (add (c' * v')) resultRef
       pure continue
     (pure unit)
   STRef.read resultRef
