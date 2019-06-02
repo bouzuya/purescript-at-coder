@@ -6,7 +6,6 @@ module ABC127D
 
 import Prelude
 
-import Bouzuya.ST.PriorityQueue as PriorityQueue
 import Control.Monad.ST as ST
 import Control.Monad.ST.Internal as STRef
 import Data.Array as Array
@@ -51,38 +50,41 @@ int2 s =
 
 solve :: String -> String
 solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
-  let lines = splitByNL input
-  nmLine <- Either.note "nmLine" (Array.head (Array.take 1 lines))
-  asLine <-
-    Either.note "asLine" (Array.last (Array.take 2 lines))
-  let bcLines = Array.drop 2 lines
-  Tuple.Tuple n m <- Either.note "n m " (int2 nmLine)
   let
-    as =
-      Array.mapMaybe
-        ((map (flip Tuple.Tuple 1)) <<< Int.fromString)
-        (splitBySP asLine)
-    bcs =
-      Array.mapMaybe ((map Tuple.swap) <<< int2) bcLines
-  pure ((BigInt.toString (solve' n m as bcs)) <> "\n")
+    lines = splitByNL input
+    nmasLines = Array.take 2 lines
+  nmLine <- Either.note "nmLine" (Array.head nmasLines)
+  asLine <- Either.note "asLine" (Array.last nmasLines)
+  let bcLines = Array.drop 2 lines
+  Tuple.Tuple n m <- Either.note "n m" (int2 nmLine)
+  let as = splitBySP asLine
+  pure ((BigInt.toString (solve' n m as bcLines)) <> "\n")
 
-solve' :: Int -> Int -> Array (Tuple Int Int) -> Array (Tuple Int Int) -> BigInt
-solve' n _ as bcs = ST.run do
-  sta <- STArray.unsafeThaw as
-  _ <- STArray.pushAll bcs sta
-  q <- PriorityQueue.fromSTArray sta
+solve' :: Int -> Int -> Array String -> Array String -> BigInt
+solve' n m as bcs = ST.run do
+  let toInt s = Unsafe.unsafePartial (Maybe.fromJust (Int.fromString s))
+  sta <- STArray.empty
+  ST.foreach as \line -> void (STArray.push (Tuple.Tuple (toInt line) 1) sta)
+  ST.foreach bcs \line -> do
+    case splitBySP line of
+      [b, c] -> void (STArray.push (Tuple.Tuple (toInt c) (toInt b)) sta)
+      _ -> pure unit
+  _ <- STArray.sortBy (flip compare) sta
+  ts <- STArray.unsafeFreeze sta
+  iRef <- STRef.new 0
   countRef <- STRef.new 0
   resultRef <- STRef.new zero
   ST.while
     do
+      i <- STRef.read iRef
       count <- STRef.read countRef
-      maxMaybe <- PriorityQueue.dequeue q
       let
-        (Tuple.Tuple v c) = Unsafe.unsafePartial (Maybe.fromJust maxMaybe)
+        (Tuple.Tuple v c) = Unsafe.unsafePartial (Array.unsafeIndex ts i)
         count' = count + c
         continue = count' < n
         v' = BigInt.fromInt v -- max 10^9
         c' = BigInt.fromInt (min (n - count) c) -- max 10^5
+      _ <- STRef.write (i + 1) iRef
       _ <- STRef.write count' countRef
       _ <- STRef.modify (add (c' * v')) resultRef
       pure continue
