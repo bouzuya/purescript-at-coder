@@ -6,6 +6,7 @@ module ABC127D
 
 import Prelude
 
+import Bouzuya.ST.PriorityQueue as PriorityQueue
 import Control.Monad.ST as ST
 import Control.Monad.ST.Internal as STRef
 import Data.Array as Array
@@ -13,7 +14,6 @@ import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Either as Either
 import Data.Int as Int
-import Data.Map as Map
 import Data.Maybe (Maybe)
 import Data.Maybe as Maybe
 import Data.String as String
@@ -77,35 +77,32 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
   let bcs = Array.mapMaybe int2 bcLines
   pure ((BigInt.toString (solve' n m as bcs)) <> "\n")
 
+type Count = Int
+type Value = Int
+data X = X Count Value
+derive instance eqX :: Eq X
+instance ordX :: Ord X where
+  compare (X _ a) (X _ b) = compare a b
+
 solve' :: Int -> Int -> Array Int -> Array (Tuple Int Int) -> BigInt
 solve' n _ as bcs = ST.run do
-  mapRef <- STRef.new Map.empty
-  ST.foreach as \a -> do
-    m <- STRef.read mapRef
-    let m' = Map.alter (Maybe.Just <<< (Maybe.maybe 1 (add 1))) a m
-    void (STRef.write m' mapRef)
+  q <- PriorityQueue.fromArray (map (X 1) as)
   ST.foreach bcs \(Tuple.Tuple b c) -> do
-    m <- STRef.read mapRef
-    let m' = Map.alter (Maybe.Just <<< (Maybe.maybe b (min n <<< add b))) c m
-    void (STRef.write m' mapRef)
+    PriorityQueue.enqueue (X b c) q
   countRef <- STRef.new 0
   resultRef <- STRef.new zero
   ST.while
     do
       count <- STRef.read countRef
-      m <- STRef.read mapRef
+      maxMaybe <- PriorityQueue.dequeue q
       let
-        { key, value } =
-          Unsafe.unsafePartial (Maybe.fromJust (Map.findMax m))
-        m' = Map.delete key m
-        count' = count + value
+        (X c v) = Unsafe.unsafePartial (Maybe.fromJust maxMaybe)
+        count' = count + c
         continue = count' < n
-        key' = BigInt.fromInt key
-        value' = BigInt.fromInt (min (n - count) value)
+        v' = BigInt.fromInt v
+        c' = BigInt.fromInt (min (n - count) c)
       void (STRef.write count' countRef)
-      void (STRef.write m' mapRef)
-      void (STRef.modify (add (key' * value')) resultRef)
+      void (STRef.modify (add (c' * v')) resultRef)
       pure continue
     (pure unit)
   STRef.read resultRef
-
