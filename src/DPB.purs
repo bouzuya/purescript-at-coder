@@ -88,18 +88,12 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
 
 solve' :: Int -> Int -> Array Int -> Int
 solve' n k hs = ST.run do
-  costs <- STArray.unsafeThaw (Array.replicate n 0)
+  costs <- STArray.unsafeThaw (Array.replicate n top)
   _ <- STArray.poke 0 0 costs
   ST.for 1 n \i -> do
     let h = unsafeIndex i hs
-    minRef <- STRef.new top
-    ST.for 1 (k + 1) \j -> do
-      when (i - j >= 0) do
-        cost <- unsafeIndex' (i - j) costs
-        let h' = unsafeIndex (i - j) hs
-        _ <- STRef.modify (min (cost + (Ord.abs (h' - h)))) minRef
-        pure unit
-    min' <- STRef.read minRef
-    _ <- STArray.poke i min' costs
-    pure unit
+    ST.for (max 0 (i - k)) i \j -> do
+      cost <- unsafeIndex' j costs
+      let h' = unsafeIndex j hs
+      void (STArray.modify i (min (cost + (Ord.abs (h' - h)))) costs)
   unsafeIndex' (n - 1) costs
