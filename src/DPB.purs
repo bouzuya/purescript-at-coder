@@ -12,6 +12,7 @@ import Data.Array as Array
 import Data.Array.Partial as ArrayPartial
 import Data.Array.ST (STArray)
 import Data.Array.ST as STArray
+import Data.Array.ST.Partial as STArrayPartial
 import Data.Either as Either
 import Data.Int as Int
 import Data.Maybe (Maybe)
@@ -27,6 +28,12 @@ import Node.FS.Sync as FS
 import Node.Process as Process
 import Node.Stream as Stream
 import Partial.Unsafe as Unsafe
+
+foreign import modifyImpl ::
+  forall h a. Int -> (a -> a) -> STArray h a -> ST h Unit
+
+modify :: forall h a. Partial => Int -> (a -> a) -> STArray h a -> ST h Unit
+modify = modifyImpl
 
 main :: Effect Unit
 main = do
@@ -57,8 +64,7 @@ unsafeIndex :: forall a. Int -> Array a -> a
 unsafeIndex i xs = Unsafe.unsafePartial (Array.unsafeIndex xs i)
 
 unsafeIndex' :: forall a h. Int -> STArray h a -> ST h a
-unsafeIndex' i xs =
-  map (\x -> Unsafe.unsafePartial (Maybe.fromJust x)) (STArray.peek i xs)
+unsafeIndex' i xs = Unsafe.unsafePartial (STArrayPartial.peek i xs)
 
 solve :: String -> String
 solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
@@ -72,11 +78,13 @@ solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
 solve' :: Int -> Int -> Array Int -> Int
 solve' n k hs = ST.run do
   costs <- STArray.unsafeThaw (Array.replicate n top)
-  _ <- STArray.poke 0 0 costs
+  _ <- Unsafe.unsafePartial (STArrayPartial.poke 0 0 costs)
   ST.for 1 n \i -> do
     let h = unsafeIndex i hs
     ST.for (max 0 (i - k)) i \j -> do
-      cost <- unsafeIndex' j costs
       let h' = unsafeIndex j hs
-      void (STArray.modify i (min (cost + (Ord.abs (h' - h)))) costs)
+      cost' <- unsafeIndex' j costs
+      _ <-
+        Unsafe.unsafePartial (modify i (min (cost' + (Ord.abs (h' - h)))) costs)
+      pure unit
   unsafeIndex' (n - 1) costs
