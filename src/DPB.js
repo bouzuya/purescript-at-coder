@@ -1,4 +1,4 @@
-exports.modifyImpl = function (i) {
+exports.modify = function (i) {
   return function (f) {
     return function (xs) {
       return function () {
