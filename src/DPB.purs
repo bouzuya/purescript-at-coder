@@ -30,6 +30,8 @@ foreign import peek :: forall h a. Fn2 Int (STArray h a) (ST h a)
 
 foreign import poke :: forall h a. Fn3 Int a (STArray h a) (ST h a)
 
+foreign import solve1 :: Args -> Int
+
 main :: Effect Unit
 main = do
   input <- FS.readTextFile Encoding.UTF8 "/dev/stdin"
@@ -63,7 +65,7 @@ args input =
   in { n, k, hs }
 
 solve :: String -> String
-solve input = (show (solve' (args input))) <> "\n"
+solve input = (show (solve1 (args input))) <> "\n"
 
 maxInt :: Int -> Int -> Int
 maxInt = max
@@ -74,14 +76,14 @@ minInt = min
 absInt :: Int -> Int
 absInt = Ord.abs
 
-solve' :: Args -> Int
-solve' { n, k, hs } = ST.run do
-  costs <- STArray.unsafeThaw (Array.replicate n top)
-  _ <- runFn3 poke 0 0 costs
-  ST.for 1 n \i -> do
-    let h = Unsafe.unsafePartial (Array.unsafeIndex hs i)
-    ST.for (maxInt 0 (i - k)) i \j -> do
-      let h' = Unsafe.unsafePartial (Array.unsafeIndex hs j)
-      cost' <- runFn2 peek j costs
-      runFn3 modify i (minInt (cost' + (absInt (h' - h)))) costs
-  runFn2 peek (n - 1) costs
+-- solve' :: Args -> Int
+-- solve' { n, k, hs } = ST.run do
+--   costs <- STArray.unsafeThaw (Array.replicate n top)
+--   _ <- runFn3 poke 0 0 costs
+--   ST.for 1 n \i -> do
+--     let h = Unsafe.unsafePartial (Array.unsafeIndex hs i)
+--     ST.for (maxInt 0 (i - k)) i \j -> do
+--       let h' = Unsafe.unsafePartial (Array.unsafeIndex hs j)
+--       cost' <- runFn2 peek j costs
+--       runFn3 modify i (minInt (cost' + (absInt (h' - h)))) costs
+--   runFn2 peek (n - 1) costs
