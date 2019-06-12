@@ -12,7 +12,7 @@ import Data.Array as Array
 import Data.Array.Partial as ArrayPartial
 import Data.Array.ST (STArray)
 import Data.Array.ST as STArray
-import Data.Array.ST.Partial as STArrayPartial
+import Data.Function.Uncurried (Fn2, Fn3, runFn2, runFn3)
 import Data.Int as Int
 import Data.Maybe as Maybe
 import Data.Ord as Ord
@@ -24,8 +24,11 @@ import Node.Process as Process
 import Node.Stream as Stream
 import Partial.Unsafe as Unsafe
 
-foreign import modify ::
-  forall h a. Int -> (a -> a) -> STArray h a -> ST h Unit
+foreign import modify :: forall h a. Fn3 Int (a -> a) (STArray h a) (ST h Unit)
+
+foreign import peek :: forall h a. Fn2 Int (STArray h a) (ST h a)
+
+foreign import poke :: forall h a. Fn3 Int a (STArray h a) (ST h a)
 
 main :: Effect Unit
 main = do
@@ -45,8 +48,10 @@ ints s =
     (\x -> Unsafe.unsafePartial (Maybe.fromJust (Int.fromString x)))
     (splitBySP s)
 
-solve :: String -> String
-solve input =
+type Args = { n :: Int, k :: Int, hs :: Array Int }
+
+args :: String -> Args
+args input =
   let
     lines = splitByNL input
     nks = splitBySP (Unsafe.unsafePartial (ArrayPartial.head lines))
@@ -55,7 +60,10 @@ solve input =
     ks = Unsafe.unsafePartial (Array.unsafeIndex nks 1)
     k = Unsafe.unsafePartial (Maybe.fromJust (Int.fromString ks))
     hs = ints (Unsafe.unsafePartial (ArrayPartial.last lines))
-  in (show (solve' n k hs)) <> "\n"
+  in { n, k, hs }
+
+solve :: String -> String
+solve input = (show (solve' (args input))) <> "\n"
 
 maxInt :: Int -> Int -> Int
 maxInt = max
@@ -66,14 +74,14 @@ minInt = min
 absInt :: Int -> Int
 absInt = Ord.abs
 
-solve' :: Int -> Int -> Array Int -> Int
-solve' n k hs = ST.run do
+solve' :: Args -> Int
+solve' { n, k, hs } = ST.run do
   costs <- STArray.unsafeThaw (Array.replicate n top)
-  _ <- Unsafe.unsafePartial (STArrayPartial.poke 0 0 costs)
+  _ <- runFn3 poke 0 0 costs
   ST.for 1 n \i -> do
     let h = Unsafe.unsafePartial (Array.unsafeIndex hs i)
     ST.for (maxInt 0 (i - k)) i \j -> do
       let h' = Unsafe.unsafePartial (Array.unsafeIndex hs j)
-      cost' <- Unsafe.unsafePartial (STArrayPartial.peek j costs)
-      modify i (minInt (cost' + (absInt (h' - h)))) costs
-  Unsafe.unsafePartial (STArrayPartial.peek (n - 1) costs)
+      cost' <- runFn2 peek j costs
+      runFn3 modify i (minInt (cost' + (absInt (h' - h)))) costs
+  runFn2 peek (n - 1) costs
