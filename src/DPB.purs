@@ -13,16 +13,11 @@ import Data.Array.Partial as ArrayPartial
 import Data.Array.ST (STArray)
 import Data.Array.ST as STArray
 import Data.Array.ST.Partial as STArrayPartial
-import Data.Either as Either
 import Data.Int as Int
-import Data.Maybe (Maybe)
 import Data.Maybe as Maybe
 import Data.Ord as Ord
 import Data.String as String
-import Data.Tuple (Tuple)
-import Data.Tuple as Tuple
 import Effect (Effect)
-import Effect.Class as Class
 import Node.Encoding as Encoding
 import Node.FS.Sync as FS
 import Node.Process as Process
@@ -38,53 +33,40 @@ modify = modifyImpl
 main :: Effect Unit
 main = do
   input <- FS.readTextFile Encoding.UTF8 "/dev/stdin"
-  output <- pure (solve input)
-  Class.liftEffect (writeStdout output)
-
-writeStdout :: String -> Effect Unit
-writeStdout s =
-  void (Stream.writeString Process.stdout Encoding.UTF8 s (pure unit))
+  _ <- Stream.writeString Process.stdout Encoding.UTF8 (solve input) (pure unit)
+  pure unit
 
 splitByNL :: String -> Array String
 splitByNL s = String.split (String.Pattern "\n") (String.trim s)
 
 splitBySP :: String -> Array String
-splitBySP s = String.split (String.Pattern " ") s
-
-int2 :: String -> Maybe (Tuple Int Int)
-int2 s =
-  case Array.mapMaybe Int.fromString (splitBySP s) of
-    [a, b] -> Maybe.Just (Tuple.Tuple a b)
-    _ -> Maybe.Nothing
+splitBySP = String.split (String.Pattern " ")
 
 ints :: String -> Array Int
 ints s = Array.mapMaybe Int.fromString (splitBySP s)
 
-unsafeIndex :: forall a. Int -> Array a -> a
-unsafeIndex i xs = Unsafe.unsafePartial (Array.unsafeIndex xs i)
-
-unsafeIndex' :: forall a h. Int -> STArray h a -> ST h a
-unsafeIndex' i xs = Unsafe.unsafePartial (STArrayPartial.peek i xs)
-
 solve :: String -> String
-solve input = Either.either (\s -> Unsafe.unsafeCrashWith s) identity do
-  let lines = splitByNL input
-  Tuple.Tuple n k <-
-    Either.note "n k"
-      (int2 (Unsafe.unsafePartial (ArrayPartial.head lines)))
-  let hs = ints (Unsafe.unsafePartial (ArrayPartial.last lines))
-  pure ((show (solve' n k hs)) <> "\n")
+solve input =
+  let
+    lines = splitByNL input
+    nks = splitBySP (Unsafe.unsafePartial (ArrayPartial.head lines))
+    ns = Unsafe.unsafePartial (Array.unsafeIndex nks 0)
+    n = Unsafe.unsafePartial (Maybe.fromJust (Int.fromString ns))
+    ks = Unsafe.unsafePartial (Array.unsafeIndex nks 1)
+    k = Unsafe.unsafePartial (Maybe.fromJust (Int.fromString ks))
+    hs = ints (Unsafe.unsafePartial (ArrayPartial.last lines))
+  in (show (solve' n k hs)) <> "\n"
 
 solve' :: Int -> Int -> Array Int -> Int
 solve' n k hs = ST.run do
   costs <- STArray.unsafeThaw (Array.replicate n top)
   _ <- Unsafe.unsafePartial (STArrayPartial.poke 0 0 costs)
   ST.for 1 n \i -> do
-    let h = unsafeIndex i hs
+    let h = Unsafe.unsafePartial (Array.unsafeIndex hs i)
     ST.for (max 0 (i - k)) i \j -> do
-      let h' = unsafeIndex j hs
-      cost' <- unsafeIndex' j costs
+      let h' = Unsafe.unsafePartial (Array.unsafeIndex hs j)
+      cost' <- Unsafe.unsafePartial (STArrayPartial.peek j costs)
       _ <-
         Unsafe.unsafePartial (modify i (min (cost' + (Ord.abs (h' - h)))) costs)
       pure unit
-  unsafeIndex' (n - 1) costs
+  Unsafe.unsafePartial (STArrayPartial.peek (n - 1) costs)
