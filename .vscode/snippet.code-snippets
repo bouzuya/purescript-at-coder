@@ -1,0 +1,70 @@
+{
+  "fromJust": {
+    "scope": "purescript",
+    "prefix": "fromJust",
+    "body": [
+      "Unsafe.unsafePartial (Maybe.fromJust ($1))"
+    ],
+    "description": "fromJust"
+  },
+  "head": {
+    "scope": "purescript",
+    "prefix": "head",
+    "body": [
+      "Unsafe.unsafePartial (ArrayPartial.head ${1:xs})"
+    ],
+    "description": "head"
+  },
+  "index": {
+    "scope": "purescript",
+    "prefix": "index",
+    "body": [
+      "Unsafe.unsafePartial (Array.unsafeIndex ${1:xs} ${2:0})"
+    ],
+    "description": "index"
+  },
+  "int": {
+    "scope": "purescript",
+    "prefix": "int",
+    "body": [
+      "Unsafe.unsafePartial (Maybe.fromJust (Int.fromString ${1:s}))"
+    ],
+    "description": "int"
+  },
+  "splitByNL": {
+    "scope": "purescript",
+    "prefix": "splitByNL",
+    "body": [
+      "splitByNL :: String -> Array String",
+      "splitByNL s = String.split (String.Pattern \"\\n\") (String.trim s)",
+      "$0"
+    ],
+    "description": "splitByNL"
+  },
+  "splitBySP": {
+    "scope": "purescript",
+    "prefix": "splitBySP",
+    "body": [
+      "splitBySP :: String -> Array String",
+      "splitBySP = String.split (String.Pattern \" \")",
+      "$0"
+    ],
+    "description": "splitBySP"
+  },
+  "tail": {
+    "scope": "purescript",
+    "prefix": "tail",
+    "body": [
+      "Unsafe.unsafePartial (ArrayPartial.tail ${1:xs})"
+    ],
+    "description": "tail"
+  },
+  "unsafePartial": {
+    "scope": "purescript",
+    "prefix": "unsafePartial",
+    "body": [
+      "Unsafe.unsafePartial ($1)"
+    ],
+    "description": "unsafePartial"
+  }
+}
