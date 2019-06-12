@@ -13,7 +13,6 @@ import Data.Array.Partial as ArrayPartial
 import Data.Array.ST (STArray)
 import Data.Array.ST as STArray
 import Data.Array.ST.Partial as STArrayPartial
-import Data.Function.Uncurried (Fn3, runFn3)
 import Data.Int as Int
 import Data.Maybe as Maybe
 import Data.Ord as Ord
@@ -41,7 +40,10 @@ splitBySP :: String -> Array String
 splitBySP = String.split (String.Pattern " ")
 
 ints :: String -> Array Int
-ints s = Array.mapMaybe Int.fromString (splitBySP s)
+ints s =
+  map
+    (\x -> Unsafe.unsafePartial (Maybe.fromJust (Int.fromString x)))
+    (splitBySP s)
 
 solve :: String -> String
 solve input =
