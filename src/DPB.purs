@@ -7,12 +7,13 @@ module DPB
 import Prelude
 
 import Control.Monad.ST (ST)
-import Control.Monad.ST as ST
+-- import Control.Monad.ST as ST
 import Data.Array as Array
 import Data.Array.Partial as ArrayPartial
 import Data.Array.ST (STArray)
-import Data.Array.ST as STArray
-import Data.Function.Uncurried (Fn2, Fn3, runFn2, runFn3)
+-- import Data.Array.ST as STArray
+-- import Data.Function.Uncurried (Fn2, Fn3, runFn2, runFn3)
+import Data.Function.Uncurried (Fn2, Fn3)
 import Data.Int as Int
 import Data.Maybe as Maybe
 import Data.Ord as Ord
